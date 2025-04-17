@@ -50,6 +50,8 @@ func (c *ChatGPT) nonStreamChatWithHistory(ctx context.Context,
 	}
 
 	// 使用我们自己的 API 调用
+	// 注意：这里不需要传递 maxTokens 参数，因为 c.Completions 方法会使用 c.MaxTokens
+	// 而 c.MaxTokens 会在 doAPIRequestWithRetry 方法中根据模型类型转换为 max_completion_tokens
 	completions, err := c.Completions(chatMsgs, aiMode)
 	if err != nil {
 		return err

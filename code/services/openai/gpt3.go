@@ -81,14 +81,10 @@ func (gpt *ChatGPT) Completions(msg []Messages, aiMode AIMode) (resp Messages,
 		PresencePenalty:  0,
 	}
 
-	// For o4-mini and newer models, we need to handle the token limit differently
-	if gpt.Model == "o4-mini" || gpt.Model == "gpt-4o" {
-		// For these models, we'll omit the max_tokens parameter completely
-		// This is because the API expects max_completion_tokens instead
-		// We'll modify the JSON directly before sending
-	} else {
-		requestBody.MaxTokens = gpt.MaxTokens
-	}
+	// 注意：我们不在这里设置 MaxTokens 或 MaxCompletionTokens
+	// 这些参数会在 doAPIRequestWithRetry 方法中根据模型类型进行处理
+	// 这样可以确保 o4-mini 和 gpt-4o 模型使用 max_completion_tokens 参数
+	// 而其他模型使用 max_tokens 参数
 	gptResponseBody := &ChatGPTResponseBody{}
 	url := gpt.FullUrl("chat/completions")
 	//fmt.Println(url)
