@@ -96,6 +96,7 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		&ProcessMentionAction{},  //判断机器人是否应该被调用
 		&AudioAction{},           //语音处理
 		&ClearAction{},           //清除消息处理
+		&MultimodalAction{},      //多模态消息处理（支持 o4-mini 模型）
 		&VisionAction{},          //图片推理处理
 		&PicAction{},             //图片处理
 		&AIModeAction{},          //模式切换处理

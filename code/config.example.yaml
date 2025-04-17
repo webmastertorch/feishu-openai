@@ -11,8 +11,8 @@ OPENAI_KEY: sk-xxx,sk-xxx,sk-xxx
 # openAI model 指定模型，默认为 gpt-3.5-turbo
 # 可选参数有："gpt-4-1106-preview", "gpt-4-32K","gpt-4","gpt-3.5-turbo-16k", "gpt-3.5-turbo"，"gpt-3.5-turbo-16k","gpt-3.5-turbo-1106", "gpt-4o", "o4-mini" 等
 #  如果使用gpt-4，请确认自己是否有接口调用白名单
-#  如果使用o4-mini，将支持多模态输入（文字+图片）
-OPENAI_MODEL: gpt-3.5-turbo
+#  如果使用o4-mini，将支持多模态输入（文字+图片），可以直接发送图片或文字图片组合消息，无需切换模式
+OPENAI_MODEL: o4-mini
 # openAI 最大token数 默认为2000
 OPENAI_MAX_TOKENS: 2000
 # 响应超时时间，单位为毫秒，默认为550毫秒
