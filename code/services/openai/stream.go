@@ -29,57 +29,9 @@ func (c *ChatGPT) StreamChatWithHistory(ctx context.Context,
 	aiMode AIMode,
 	responseStream chan string,
 ) error {
-	// 如果是 o4-mini 或 gpt-4o 模型，使用非流式 API 并模拟流式响应
-	if c.Model == "o4-mini" || c.Model == "gpt-4o" {
-		return c.nonStreamChatWithHistory(ctx, msg, maxTokens, aiMode, responseStream)
-	}
-
-	// 对于其他模型，使用原来的流式 API
-	config := go_openai.DefaultConfig(c.ApiKey[0])
-	config.BaseURL = c.ApiUrl + "/v1"
-	if c.Platform != OpenAI {
-		baseUrl := fmt.Sprintf("https://%s.%s",
-			c.AzureConfig.ResourceName, "openai.azure.com")
-		config = go_openai.DefaultAzureConfig(c.AzureConfig.
-			ApiToken, baseUrl)
-		config.AzureModelMapperFunc = func(model string) string {
-			return c.AzureConfig.DeploymentName
-		}
-	}
-
-	proxyClient, parseProxyError := GetProxyClient(c.HttpProxy)
-	if parseProxyError != nil {
-		return parseProxyError
-	}
-	config.HTTPClient = proxyClient
-
-	client := go_openai.NewClientWithConfig(config)
-	var temperature float32
-	temperature = float32(aiMode)
-	req := go_openai.ChatCompletionRequest{
-		Model:       c.Model,
-		Messages:    msg,
-		N:           1,
-		Temperature: temperature,
-		MaxTokens:   maxTokens,
-	}
-
-	stream, err := client.CreateChatCompletionStream(ctx, req)
-	if err != nil {
-		return fmt.Errorf("CreateCompletionStream returned error: %v", err)
-	}
-
-	defer stream.Close()
-	for {
-		response, err := stream.Recv()
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			return fmt.Errorf("Stream error: %v", err)
-		}
-		responseStream <- response.Choices[0].Delta.Content
-	}
+	// 对于所有模型，使用我们自己的非流式 API 并模拟流式响应
+	// 这样可以避免 go-openai 库中的 max_tokens 参数问题
+	return c.nonStreamChatWithHistory(ctx, msg, maxTokens, aiMode, responseStream)
 }
 
 // nonStreamChatWithHistory 使用非流式 API 并模拟流式响应
