@@ -53,15 +53,24 @@ func (c *ChatGPT) StreamChatWithHistory(ctx context.Context,
 	//turn aimode to float64()
 	var temperature float32
 	temperature = float32(aiMode)
+	// Create base request
 	req := go_openai.ChatCompletionRequest{
 		Model:       c.Model,
 		Messages:    msg,
 		N:           1,
 		Temperature: temperature,
-		MaxTokens:   maxTokens,
 		//TopP:        1,
 		//Moderation:     true,
 		//ModerationStop: true,
+	}
+
+	// Since we're using an older version of go-openai that doesn't support MaxCompletionTokens,
+	// we'll need to handle this differently for o4-mini and gpt-4o models
+	if c.Model == "o4-mini" || c.Model == "gpt-4o" {
+		// For o4-mini and gpt-4o, we'll omit MaxTokens and let the API use its default
+		// This is a workaround until the go-openai library is updated
+	} else {
+		req.MaxTokens = maxTokens
 	}
 	stream, err := client.CreateChatCompletionStream(ctx, req)
 	if err != nil {

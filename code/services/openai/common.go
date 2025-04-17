@@ -68,9 +68,32 @@ func (gpt *ChatGPT) doAPIRequestWithRetry(url, method string,
 
 	switch bodyType {
 	case jsonBody:
-		requestBodyData, err = json.Marshal(requestBody)
-		if err != nil {
-			return err
+		// Special handling for o4-mini and gpt-4o models
+		if gpt.Model == "o4-mini" || gpt.Model == "gpt-4o" {
+			// Convert to map to modify JSON directly
+			var bodyMap map[string]interface{}
+			bodyBytes, _ := json.Marshal(requestBody)
+			json.Unmarshal(bodyBytes, &bodyMap)
+
+			// Remove max_tokens if present
+			delete(bodyMap, "max_tokens")
+
+			// Add max_completion_tokens if needed
+			if _, ok := bodyMap["max_completion_tokens"]; !ok && gpt.MaxTokens > 0 {
+				bodyMap["max_completion_tokens"] = gpt.MaxTokens
+			}
+
+			// Marshal back to JSON
+			requestBodyData, err = json.Marshal(bodyMap)
+			if err != nil {
+				return err
+			}
+		} else {
+			// Normal JSON marshaling for other models
+			requestBodyData, err = json.Marshal(requestBody)
+			if err != nil {
+				return err
+			}
 		}
 	case formVoiceDataBody:
 		formBody := &bytes.Buffer{}

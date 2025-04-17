@@ -54,13 +54,14 @@ type ChatGPTChoiceItem struct {
 
 // ChatGPTRequestBody 响应体
 type ChatGPTRequestBody struct {
-	Model            string     `json:"model"`
-	Messages         []Messages `json:"messages"`
-	MaxTokens        int        `json:"max_tokens"`
-	Temperature      AIMode     `json:"temperature"`
-	TopP             int        `json:"top_p"`
-	FrequencyPenalty int        `json:"frequency_penalty"`
-	PresencePenalty  int        `json:"presence_penalty"`
+	Model               string     `json:"model"`
+	Messages            []Messages `json:"messages"`
+	MaxTokens           int        `json:"max_tokens,omitempty"`
+	MaxCompletionTokens int        `json:"max_completion_tokens,omitempty"`
+	Temperature         AIMode     `json:"temperature"`
+	TopP                int        `json:"top_p"`
+	FrequencyPenalty    int        `json:"frequency_penalty"`
+	PresencePenalty     int        `json:"presence_penalty"`
 }
 
 func (msg *Messages) CalculateTokenLength() int {
@@ -70,14 +71,23 @@ func (msg *Messages) CalculateTokenLength() int {
 
 func (gpt *ChatGPT) Completions(msg []Messages, aiMode AIMode) (resp Messages,
 	err error) {
+	// Create base request body
 	requestBody := ChatGPTRequestBody{
 		Model:            gpt.Model,
 		Messages:         msg,
-		MaxTokens:        gpt.MaxTokens,
 		Temperature:      aiMode,
 		TopP:             1,
 		FrequencyPenalty: 0,
 		PresencePenalty:  0,
+	}
+
+	// For o4-mini and newer models, we need to handle the token limit differently
+	if gpt.Model == "o4-mini" || gpt.Model == "gpt-4o" {
+		// For these models, we'll omit the max_tokens parameter completely
+		// This is because the API expects max_completion_tokens instead
+		// We'll modify the JSON directly before sending
+	} else {
+		requestBody.MaxTokens = gpt.MaxTokens
 	}
 	gptResponseBody := &ChatGPTResponseBody{}
 	url := gpt.FullUrl("chat/completions")
