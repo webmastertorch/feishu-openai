@@ -26,10 +26,30 @@ type VisionRequestBody struct {
 	MaxTokens int              `json:"max_tokens"`
 }
 
+// VisionModel represents the model to use for vision requests
+type VisionModel string
+
+const (
+	GPT4VisionPreview VisionModel = "gpt-4-vision-preview"
+	GPT4o           VisionModel = "gpt-4o"
+	GPT4oMini       VisionModel = "o4-mini"
+)
+
+// GetVisionInfo processes vision requests with the specified model
 func (gpt *ChatGPT) GetVisionInfo(msg []VisionMessages) (
 	resp Messages, err error) {
+	// Default to gpt-4-vision-preview if not using o4-mini
+	visionModel := VisionModel("gpt-4-vision-preview")
+
+	// If the model is set to o4-mini or gpt-4o, use that instead
+	if gpt.Model == string(GPT4oMini) {
+		visionModel = GPT4oMini
+	} else if gpt.Model == string(GPT4o) {
+		visionModel = GPT4o
+	}
+
 	requestBody := VisionRequestBody{
-		Model:     "gpt-4-vision-preview",
+		Model:     string(visionModel),
 		Messages:  msg,
 		MaxTokens: gpt.MaxTokens,
 	}
@@ -39,8 +59,7 @@ func (gpt *ChatGPT) GetVisionInfo(msg []VisionMessages) (
 	if url == "" {
 		return resp, errors.New("无法获取openai请求地址")
 	}
-	//gpt.ChangeMode("gpt-4-vision-preview")
-	//fmt.Println("model", gpt.Model)
+
 	err = gpt.sendRequestWithBodyType(url, "POST", jsonBody, requestBody, gptResponseBody)
 	if err == nil && len(gptResponseBody.Choices) > 0 {
 		resp = gptResponseBody.Choices[0].Message
