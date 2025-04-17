@@ -30,8 +30,8 @@ type VisionRequestBody struct {
 type VisionModel string
 
 const (
-	GPT4VisionPreview VisionModel = "gpt-4-vision-preview"
-	GPT4o           VisionModel = "gpt-4o"
+	GPT4VisionPreview VisionModel = "o4-mini"
+	GPT4o           VisionModel = "o4-mini"
 	GPT4oMini       VisionModel = "o4-mini"
 )
 
@@ -39,7 +39,7 @@ const (
 func (gpt *ChatGPT) GetVisionInfo(msg []VisionMessages) (
 	resp Messages, err error) {
 	// Default to gpt-4-vision-preview if not using o4-mini
-	visionModel := VisionModel("gpt-4-vision-preview")
+	visionModel := VisionModel("o4-mini")
 
 	// If the model is set to o4-mini or gpt-4o, use that instead
 	if gpt.Model == string(GPT4oMini) {
